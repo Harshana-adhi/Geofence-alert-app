@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Geofence-app</string>
+    <string name="geofence_info_placeholder">Geofence: lat 37.4219983, lng -122.084, radius 100m</string>
+    <string name="status_not_monitoring">Status: not monitoring</string>
+    <string name="status_monitoring_active">Status: monitoring active</string>
+    <string name="start_monitoring">Start Monitoring</string>
+    <string name="log_placeholder">Event log will appear here…</string>
 </resources>

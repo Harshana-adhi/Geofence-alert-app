@@ -1,0 +1,4 @@
+- `[ ]` Update `strings.xml` with required resources
+- `[ ]` Replace `activity_main.xml` with the new layout
+- `[ ]` Update `MainActivity.kt` with UI logic and stubs
+- `[ ]` Verify changes
