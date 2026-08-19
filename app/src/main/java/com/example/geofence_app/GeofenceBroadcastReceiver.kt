@@ -5,15 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
+/**
+ * Stub for GeofenceBroadcastReceiver.
+ * To be implemented by Member 4 (Receiver & Alerts logic).
+ */
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
-
-    companion object {
-        const val ACTION_GEOFENCE_EVENT = "com.example.geofence_app.ACTION_GEOFENCE_EVENT"
-        private const val TAG = "GeofenceBroadcastReceiver"
-    }
-
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "Received geofence broadcast: ${intent.action}")
-        // TODO: Member 4 to handle GeofencingEvent extraction and transition logic here.
+        Log.d("GeofenceReceiver", "Intent received! Member 4 logic will handle this.")
+        // Member 4 will extract GeofencingEvent.fromIntent(intent) here.
     }
 }
