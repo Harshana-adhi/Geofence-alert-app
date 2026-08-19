@@ -13,29 +13,16 @@ import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 
-/**
- * GeofenceHelper: Handles the creation and registration of Geofences.
- *
- * Part of Member 3's task (Geofence + GeofencingClient logic).
- *
- * NOTE: [ACTION_GEOFENCE_EVENT] must match exactly what Member 1 registers in
- * the Manifest's <intent-filter> and what Member 4's BroadcastReceiver expects.
- */
 object GeofenceHelper {
 
     private const val TAG = "GeofenceHelper"
 
-    // --- INTEGRATION POINTS FOR TEAMMATES ---
     const val ACTION_GEOFENCE_EVENT = "com.example.geofence_app.ACTION_GEOFENCE_EVENT"
     private const val GEOFENCE_REQUEST_CODE = 0
-    // ----------------------------------------
 
-    // TODO(team): confirm target coordinates before the demo — the two branches
-    // used different values (37.4219999,-122.0862462 vs 37.4220,-122.0841).
-    // Kept the geofence-setup branch's value for now; change if it should be elsewhere.
     private const val GEOFENCE_ID = "test_geofence_1"
-    private const val LATITUDE = 37.4219999
-    private const val LONGITUDE = -122.0862462
+    private const val LATITUDE = 6.972621
+    private const val LONGITUDE = 79.915442
     private const val RADIUS_IN_METERS = 100f
     private const val EXPIRATION_DURATION = Geofence.NEVER_EXPIRE
 
@@ -70,13 +57,6 @@ object GeofenceHelper {
         return PendingIntent.getBroadcast(context, GEOFENCE_REQUEST_CODE, intent, flags)
     }
 
-    /**
-     * Entry point to register the geofence.
-     * Called by Member 2's button click (after Member 1's permission check).
-     *
-     * onSuccess/onFailure let the caller update the UI (status text, log) directly
-     * instead of the result only showing up in Logcat.
-     */
     @SuppressLint("MissingPermission")
     fun registerGeofence(
         context: Context,
@@ -104,9 +84,6 @@ object GeofenceHelper {
             }
     }
 
-    /**
-     * Stops tracking the fixed geofence by removing it from the GeofencingClient.
-     */
     fun stopGeofence(context: Context) {
         getGeofencingClient(context).removeGeofences(getGeofencePendingIntent(context))
     }

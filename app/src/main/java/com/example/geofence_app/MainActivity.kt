@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStatus: TextView
     private lateinit var tvLog: TextView
     private lateinit var btnStartMonitoring: Button
+    private lateinit var statusDot: View
 
     private val foregroundLocationRequest =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
@@ -46,6 +48,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    private val notificationPermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                Toast.makeText(
+                    this,
+                    "Notification permission is required to show geofence alerts.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,16 +73,33 @@ class MainActivity : AppCompatActivity() {
         tvStatus = findViewById(R.id.tvStatus)
         tvLog = findViewById(R.id.tvLog)
         btnStartMonitoring = findViewById(R.id.btnStartMonitoring)
+        statusDot = findViewById(R.id.statusDot)
+
+        NotificationHelper.createNotificationChannel(this)
 
         btnStartMonitoring.setOnClickListener {
             startMonitoring()
         }
 
+        if (MonitoringState.isMonitoring(this)) {
+            setMonitoringActive()
+        }
+
         requestLocationPermissions()
+        requestNotificationPermissionIfNeeded()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        GeofenceEventBus.listener = { message -> appendLog(message) }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        GeofenceEventBus.listener = null
     }
 
     private fun startMonitoring() {
-        // TODO: Teammate will replace the stub with a real geofencingClient.addGeofences() call
         if (!hasLocationPermissions()) {
             Toast.makeText(
                 this,
@@ -80,8 +110,23 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        appendLog("Start Monitoring tapped — registering geofence (stub)")
+        GeofenceHelper.registerGeofence(
+            context = this,
+            onSuccess = {
+                MonitoringState.setMonitoring(this, true)
+                appendLog("Geofence registered successfully")
+                setMonitoringActive()
+            },
+            onFailure = { e ->
+                appendLog("Failed to register geofence: ${e.message}")
+                Toast.makeText(this, "Failed to start monitoring: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        )
+    }
+
+    private fun setMonitoringActive() {
         tvStatus.text = getString(R.string.status_monitoring_active)
+        statusDot.setBackgroundResource(R.drawable.dot_active)
     }
 
     private fun appendLog(message: String) {
@@ -133,8 +178,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestBackgroundLocationIfNeeded() {
-        // Android requires background location to be requested separately,
-        // after foreground location is already granted, on API 30+.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val backgroundGranted = ContextCompat.checkSelfPermission(
                 this,
@@ -142,6 +185,19 @@ class MainActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
             if (!backgroundGranted) {
                 backgroundLocationRequest.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!granted) {
+                notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
